@@ -1,23 +1,22 @@
 # frozen_string_literal: true
 
-require 'libis/tools/parameter'
-require 'libis/tools/extend/hash'
-require 'libis/tools/logger'
+require 'teneo/extensions/hash'
 
-require 'teneo/workflow'
+require_relative 'base/logging'
+require_relative 'base/task_configuration'
+require_relative 'base/task_execution'
+require_relative 'base/task_hierarchy'
 require_relative 'base/task_status'
 
 module Teneo
   module Workflow
     class Task
-      include ::Libis::Tools::Logger
-      include ::Libis::Tools::ParameterContainer
 
-      include Base::TaskStatus
-      include Base::TaskConfiguration
-      include Base::TaskExecution
-      include Base::TaskHierarchy
-      include Base::TaskLogging
+      include Teneo::Workflow::Base::Logging
+      include Teneo::Workflow::Base::Status
+      include Teneo::Workflow::Base::TaskConfiguration
+      include Teneo::Workflow::Base::TaskExecution
+      include Teneo::Workflow::Base::TaskHierarchy
 
       attr_accessor :properties
 
@@ -72,7 +71,7 @@ module Teneo
       end
 
       def self.task_classes
-        ObjectSpace.each_object(::Class).select { |klass| klass < self && !klass.is_a?(TaskGroup) }
+        ObjectSpace.each_object(::Class).select { |klass| klass < self && !klass.is_a?(Teneo::Workflow::TaskGroup) }
       end
 
       def initialize(cfg = {})
@@ -88,7 +87,7 @@ module Teneo
         klasses = args.empty? ? allowed_item_types : args
         unless (item.class.ancestors.map(&:name) & klasses.map(&:name)).size > 0
           return false unless raise_on_error
-          raise WorkflowError, "Item is of wrong type : #{item.class.name} - expected one of #{klasses.map(&:name)}"
+          raise Teneo::Workflow::Error, "Item is of wrong type : #{item.class.name} - expected one of #{klasses.map(&:name)}"
         end
 
         true
@@ -111,7 +110,7 @@ module Teneo
       end
 
       def <<(_task)
-        raise Teneo::WorkflowError, "Processing task '#{namepath}' is not allowed to have subtasks."
+        raise Teneo::Workflow::Error, "Processing task '#{namepath}' is not allowed to have subtasks."
       end
 
       # @return [Teneo::Workflow::Run]
@@ -128,11 +127,11 @@ module Teneo
       end
 
       def status_log
-        Config[:status_log].find_all(task: self)
+        Teneo::Workflow.config.status_log.find_all(task: self)
       end
 
       def last_status
-        Config[:status_log].find_all(run: self)&.status_sym || StatusEnum.keys.first
+        Teneo::Workflow.config.status_log.find_all(run: self)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
       end
     end
   end

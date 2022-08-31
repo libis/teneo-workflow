@@ -100,13 +100,13 @@ module Teneo
         Teneo::Workflow.config.status_log.find_all(item: self)
       end
 
-      def last_status_log
-        Teneo::Workflow.config.status_log.find_all_last(self)
+      def last_status_log(task = nil)
+        task = task.namepath if task.is_a?(Teneo::Workflow::Task)
+        Teneo::Workflow.config.status_log.find_last(task: task, item: self)
       end
 
       def last_status(task)
-        task = task.namepath if task.is_a?(Teneo::Workflow::Task)
-        Teneo::Workflow.config.status_log.find_last(item: self, task: task)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
+        last_status_log(task)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
       end
 
       def logger

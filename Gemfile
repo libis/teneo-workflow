@@ -9,5 +9,8 @@ gem "rake", "~> 13.0"
 
 gem "rspec", "~> 3.0"
 
+gem 'gem-release'
+gem 'github_changelog_generator'
+
 gem "awesome_print"
 gem "rubocop"

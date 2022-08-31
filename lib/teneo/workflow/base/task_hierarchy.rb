@@ -25,7 +25,7 @@ module Teneo
           return if items.empty?
 
           status_count = Hash.new(0)
-          status_progress(item: parent_item, progress: 0, max: items.count)
+          status_progress(0, item: parent_item, max: items.count)
           items.each_with_index do |item, i|
             debug 'Processing subitem (%d/%d): %s', parent_item, i + 1, items.size, item.to_s
 
@@ -33,21 +33,21 @@ module Teneo
               new_item = process_item(item, *args)
               item = new_item if new_item.is_a?(Teneo::Workflow::WorkItem)
             rescue Teneo::WorkflowError => e
-              set_item_status(status: :failed, item: item)
+              set_status :failed, item: item
               error 'Error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
             rescue Teneo::WorkflowAbort => e
               fatal_error 'Fatal error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
-              set_item_status(status: :failed, item: item)
+              set_status :failed, item: item
               break
             rescue StandardError => e
               fatal_error 'Unexpected error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
-              set_item_status(status: :failed, item: item)
+              set_status :failed, item: item
               raise Teneo::WorkflowAbort, "#{e.message} @ #{e.backtrace.first}"
             ensure
-              item_status = item_status(item)
+              item_status = get_status item: item
               status_count[item_status] += 1
               break if abort_on_failure && item_status != :done
-              status_progress(item: parent_item, progress: i + 1)
+              status_progress(i + 1, item: parent_item)
             end
           end
 
@@ -73,7 +73,7 @@ module Teneo
             final_item_status = :failed
           end
 
-          set_item_status(item: item, status: final_item_status)
+          set_status(final_item_status, item: item)
         end
 
         private

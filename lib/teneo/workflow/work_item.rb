@@ -3,6 +3,9 @@
 require 'libis/tools/extend/array'
 require 'libis/tools/extend/hash'
 
+require_relative 'base/logging'
+require_relative 'base/status'
+
 module Teneo
   module Workflow
     # Base module for all work items.
@@ -20,7 +23,6 @@ module Teneo
     #     used to fine-tune the behaviour of tasks that support this.
     # - properties: [Hash] a set of properties, typically collected during the workflow processing and used to store
     #     final or intermediate resulst of tasks.
-    # - status_log: [Enumberable] a list of all status changes the work item went through.
     #
     # The module is created so that it is possible to implement an ActiveRecord/Datamapper/... implementation easily.
     # A simple in-memory implementation would require:
@@ -28,7 +30,6 @@ module Teneo
     # attr_accessor :parent
     # attr_accessor :items
     # attr_accessor :options, :properties
-    # attr_accessor :status_log
     # attr_accessor :summary
     #
     # def initialize
@@ -36,22 +37,14 @@ module Teneo
     #   self.items = []
     #   self.options = {}
     #   self.properties = {}
-    #   self.status_log = []
-    # end
-    #
-    # protected
-    #
-    # ## Method below should be adapted to match the implementation of the status array
-    #
-    # def add_status_log(info)
-    #   self.status_log << info
     # end
     #
     # The implementation should also take care that the public methods #save and #save! are implemented.
     # ActiveRecord and Mongoid are known to implement these, but others may not.
     #
     module WorkItem
-      include Base::Logging
+      include Teneo::Workflow::Base::Logging
+      include Teneo::Workflow::Base::Status
 
       ### Methods that need implementation:
       # getter and setter accessors for:
@@ -139,18 +132,6 @@ module Teneo
         parent&.job
       end
 
-      def status_log
-        Config[:status_log].find_all(item: self)
-      end
-
-      def last_status_log
-        Config[:status_log].find_all_last(self)
-      end
-
-      def last_status(task)
-        task = task.namepath if task.is_a?(Teneo::Workflow::Task)
-        Config[:status_log].find_last(item: self, task: task)&.status_sym || Base::StatusEnum.keys.first
-      end
     end
   end
 end

@@ -21,12 +21,12 @@ module Teneo
           item
         rescue WorkflowError => e
           error e.message, item
-          set_item_status status: :failed, item: item
+          set_status :failed, item: item
         rescue WorkflowAbort => e
-          set_item_status status: :failed, item: item
+          set_status :failed, item: item
           raise e if parent
         rescue StandardError => e
-          set_item_status status: :failed, item: item
+          set_status :failed, item: item
           fatal_error "Exception occured: #{e.message}", item
           debug e.backtrace.join("\n")
         end
@@ -47,7 +47,7 @@ module Teneo
             new_item = process_item(item, *args)
             item = new_item if check_item_type item, raise_on_error: false
 
-            case item_status(item)
+            case get_status(item: item)
             when :not_started
               return item
             when :done, :reverted
@@ -65,15 +65,15 @@ module Teneo
         end
 
         def process_item(item, *args)
-          return item if item.last_status(self) == :done && !run_always
+          return item if last_status(item: item)== :done && !run_always
 
           if pre_process(item, *args)
-            set_item_status status: :started, item: item
+            set_status :started, item: item
             process item, *args
           end
 
           run_subitems(item, *args) if recursive
-          set_item_status status: :done, item: item if item_status_equals(item: item, status: :started)
+          set_status(:done, item: item) if status_equals(:started, item: item)
 
           post_process item, *args
 

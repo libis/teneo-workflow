@@ -33,4 +33,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "dry-configurable"
   spec.add_runtime_dependency "teneo-extensions"
-  
+  spec.add_runtime_dependency "teneo-parameter"
+  spec.add_runtime_dependency "teneo-logger"
+  spec.add_runtime_dependency "ruby-enum"
+end

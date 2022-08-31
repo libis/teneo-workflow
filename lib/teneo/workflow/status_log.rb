@@ -7,9 +7,6 @@ module Teneo
       ### Methods that need implementation in the including class
       # getter accessors for:
       # - status
-      # - run
-      # - task
-      # - item
       # class methods:
       # - create_status(...)
       # - find_last(...)
@@ -17,34 +14,39 @@ module Teneo
       # instance methods:
       # - update_status(...)
 
-      module Classmethods
-        def set_status(status: nil, task:, item: nil, progress: nil, max: nil)
-          item = nil unless item.is_a? Teneo::Workflow::WorkItem
-          entry = find_last(task: task, item: item)
-          values = { status: status, task: task, item: item, progress: progress, max: max }.compact
-          return create_status(values) if entry.nil?
-          return create_status(values) if Base::StatusEnum.to_int(status) < Base::StatusEnum.to_int(entry.status)
+      module ClassMethods
+        def set_status(status: nil, run:, task:, item: nil, progress: nil, max: nil)
+          entry = find_last(run: run, task: task, item: item)
+          values = { status: status, run: run, task: task, item: item, progress: progress, max: max }.compact
 
-          entry.update_status(values.slice(:status, :progress, :max))
+          return create_status(**values) if entry.nil?
+          return create_status(**values) if Base::StatusEnum.to_int(status) < Base::StatusEnum.to_int(entry.status)
+
+          entry.update_status(**(values.slice(:status, :progress, :max)))
         end
 
-        def sanitize(run: nil, task: nil, item: nil)
-          if task.is_a?(Teneo::Workflow::Task)
-            run ||= task.run
-            task = task.namepath
-          end
-          item = nil unless item.is_a? Teneo::Workflow::WorkItem
-          [run, task, item]
+        # To implement:
+        def create_status(**info)
         end
 
-        def find_all_last(item)
-          list = find_all(item: item)
-          list.reverse.uniq(&:task).reverse
+        # To implement:
+        def find_last(**info)
+          nil
+        end
+
+        # To implement:
+        def find_all(**info)
+          []
+        end
+
+        # To implement:
+        def find_all_last(**info)
+          []
         end
       end
 
       def self.included(base)
-        base.extend Classmethods
+        base.extend ClassMethods
       end
 
       def status_sym
@@ -53,6 +55,10 @@ module Teneo
 
       def status_txt
         Teneo::Workflow::Base::StatusEnum.to_str(status)
+      end
+
+      # To implement:
+      def update_status(status:, progress:, max:)
       end
     end
   end
