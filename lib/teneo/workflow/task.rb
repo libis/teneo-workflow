@@ -3,10 +3,10 @@
 require 'teneo/extensions/hash'
 
 require_relative 'base/logging'
+require_relative 'base/status'
 require_relative 'base/task_configuration'
 require_relative 'base/task_execution'
 require_relative 'base/task_hierarchy'
-require_relative 'base/task_status'
 
 module Teneo
   module Workflow

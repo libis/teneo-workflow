@@ -6,7 +6,6 @@ require_relative "workflow/version"
 
 module Teneo
   module Workflow
-    autoload :Action, "teneo/workflow/action"
     autoload :FileItem, "teneo/workflow/file_item"
     autoload :Job, "teneo/workflow/job"
     autoload :MessageLog, "teneo/workflow/message_log"
@@ -19,13 +18,13 @@ module Teneo
     autoload :Workflow, "teneo/workflow/workflow"
 
     module Base
-      autoload :ItemLogging, "teneo/workflow/base/item_logging"
+      autoload :Action, "teneo/workflow/base/action"
+      autoload :Logging, "teneo/workflow/base/logging"
+      autoload :Status, "teneo/workflow/base/status"
       autoload :StatusEnum, "teneo/workflow/base/status_enum"
       autoload :TaskConfiguration, "teneo/workflow/base/task_configuration"
       autoload :TaskExecution, "teneo/workflow/base/task_execution"
       autoload :TaskHierarchy, "teneo/workflow/base/task_hierarchy"
-      autoload :TaskLogging, "teneo/workflow/base/task_logging"
-      autoload :TaskStatus, "teneo/workflow/base/task_status"
     end
 
     def require_all(dir)

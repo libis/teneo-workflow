@@ -23,7 +23,7 @@ module Teneo
       end
 
       def namepath
-        '/'
+        'Run'
       end
 
       def action

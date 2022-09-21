@@ -56,7 +56,7 @@ module Teneo
         Teneo::Workflow.config.status_log.find_all(run: self)
       end
 
-      def last_status(item = nil, task: '/')
+      def last_status(item = nil, task: runner.namepath)
         Teneo::Workflow.config.status_log.find_last(run: self, task: task, item: item)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
       end
 

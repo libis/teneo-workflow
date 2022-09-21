@@ -31,9 +31,9 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "dry-configurable"
-  spec.add_runtime_dependency "teneo-extensions"
-  spec.add_runtime_dependency "teneo-parameter"
-  spec.add_runtime_dependency "teneo-logger"
+  spec.add_runtime_dependency "dry-configurable", "~> 0.0"
+  spec.add_runtime_dependency "teneo-extensions", "~> 0.0"
+  spec.add_runtime_dependency "teneo-parameter", "~> 0.0"
+  spec.add_runtime_dependency "teneo-logger", "~> 1.0"
   spec.add_runtime_dependency "ruby-enum"
 end
