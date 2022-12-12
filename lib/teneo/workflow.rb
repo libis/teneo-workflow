@@ -3,6 +3,7 @@
 require "dry-configurable"
 
 require_relative "workflow/version"
+require_relative "workflow/exceptions"
 
 module Teneo
   module Workflow

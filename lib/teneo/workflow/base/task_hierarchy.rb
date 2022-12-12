@@ -32,17 +32,17 @@ module Teneo
             begin
               new_item = process_item(item, *args)
               item = new_item if new_item.is_a?(Teneo::Workflow::WorkItem)
-            rescue Teneo::WorkflowError => e
+            rescue Teneo::Workflow::Error => e
               set_status :failed, item: item
               error 'Error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
-            rescue Teneo::WorkflowAbort => e
+            rescue Teneo::Workflow::Abort => e
               fatal_error 'Fatal error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
               set_status :failed, item: item
               break
             rescue StandardError => e
               fatal_error 'Unexpected error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
               set_status :failed, item: item
-              raise Teneo::WorkflowAbort, "#{e.message} @ #{e.backtrace.first}"
+              raise Teneo::Workflow::Abort, "#{e.message} @ #{e.backtrace.first}"
             ensure
               item_status = get_status item: item
               status_count[item_status] += 1

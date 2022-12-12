@@ -19,10 +19,10 @@ module Teneo
 
           self.action = 'abort' unless item
           item
-        rescue WorkflowError => e
+        rescue Teneo::Workflow::Error => e
           error e.message, item
           set_status :failed, item: item
-        rescue WorkflowAbort => e
+        rescue Teneo::Workflow::Abort => e
           set_status :failed, item: item
           raise e if parent
         rescue StandardError => e
