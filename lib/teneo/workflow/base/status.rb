@@ -46,7 +46,7 @@ module Teneo
 
         # Gets the last known status label of the object.
         # @return [String] status label ( = task name + status )
-        def get_status_label(task: task, item: item)
+        def get_status_label(task: nil, item: nil)
           "#{task}#{get_status(task: task, item: item).to_s.camelize}"
         end
 
