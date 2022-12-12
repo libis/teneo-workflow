@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "teneo/logger"
+require "teneo/tools/logger"
 
 require_relative "../work_item"
 require_relative "../job"
@@ -11,9 +11,9 @@ module Teneo
   module Workflow
     module Base
       module Logging
-        include Teneo::Logger
+        include Teneo::Tools::Logger
 
-        class Formatter < Teneo::Logger::Formatter
+        class Formatter < Teneo::Tools::Logger::Formatter
           def task_name
             log.payload? ? "#{log.payload.delete(:task_name)} -" : nil
           end
@@ -61,17 +61,17 @@ module Teneo
           to_message_log(**info)
         end
 
-        def logger(task = nil)
+        def logger
           case self
           when Teneo::Workflow::Run
-            self
+            super
           when Teneo::Workflow::Task
-            self.run
+            self.run&.logger
           when Teneo::Workflow::WorkItem
-            self.job&.last_run
+            self.job&.last_run&.logger
           else
-            nil
-          end&.logger || super()
+            super
+          end
         end
 
         protected

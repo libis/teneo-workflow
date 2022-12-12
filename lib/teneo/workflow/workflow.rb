@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "teneo/parameter"
+require "teneo/tools/parameter"
 require "teneo/workflow/task_group"
-require "teneo/extensions/hash"
+require "teneo/tools/extensions/hash"
 
 # This is the base module for Workflows.
 #
@@ -88,7 +88,7 @@ module Teneo
         self.config.deep_symbolize_keys[:input].inject({}) do |hash, input_def|
           name = input_def.first
           default = input_def.last[:default]
-          parameter = ::Teneo::Parameter::Definition.new name, default
+          parameter = ::Teneo::Tools::Parameter::Definition.new name, default
           input_def.last.each { |k, v| parameter[k] = v }
           hash[name] = parameter
           hash

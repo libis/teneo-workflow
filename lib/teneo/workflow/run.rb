@@ -2,6 +2,8 @@
 
 require 'fileutils'
 
+require_relative 'base/logging'
+
 # Base module for all workflow runs. It is created by job when the job is executed.
 #
 # This module lacks the implementation for the data attributes. It functions as an interface that describes the
@@ -14,6 +16,8 @@ require 'fileutils'
 module Teneo
   module Workflow
     module Run
+
+      include Teneo::Workflow::Base::Logging
 
       ### Methods that need implementation in the including class
       # getter and setter accessors for:
@@ -60,9 +64,6 @@ module Teneo
         Teneo::Workflow.config.status_log.find_last(run: self, task: task, item: item)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
       end
 
-      def logger
-        properties[:logger] || job&.logger || Teneo::Workflow.config.logger
-      end
     end
   end
 end

@@ -13,4 +13,4 @@ gem 'gem-release'
 gem 'github_changelog_generator'
 
 gem "awesome_print"
-gem "rubocop"
+gem "standard", group: [:development, :test]

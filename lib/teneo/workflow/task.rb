@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'teneo/extensions/hash'
+require 'teneo/tools/extensions/hash'
 
 require_relative 'base/logging'
 require_relative 'base/status'

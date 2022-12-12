@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "teneo/logger"
+require "teneo/tools/logger"
 
 module Teneo
   module Workflow

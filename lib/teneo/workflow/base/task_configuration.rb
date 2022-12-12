@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'teneo/parameter'
+require 'teneo/tools/parameter'
 
 module Teneo
   module Workflow
     module Base
       module TaskConfiguration
-        include ::Teneo::Parameter::Container
+        include ::Teneo::Tools::Parameter::Container
 
         def configure(parameter_values)
           parameter_values.each do |name, value|
