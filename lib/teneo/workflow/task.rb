@@ -74,7 +74,8 @@ module Teneo
         ObjectSpace.each_object(::Class).select { |klass| klass < self && !klass.is_a?(Teneo::Workflow::TaskGroup) }
       end
 
-      def initialize(cfg = {})
+      def initialize(parent, cfg = {})
+        @parent = parent
         configure cfg[:parameters] || {}
         @properties = cfg.dup
       end

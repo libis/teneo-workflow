@@ -11,7 +11,7 @@ module Teneo
 
       def initialize(run, cfg = {})
         @run = run
-        super cfg
+        super run, cfg
       end
 
       def run

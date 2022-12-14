@@ -9,11 +9,11 @@ module Teneo
 
       recursive false
 
-      def initialize(cfg = {})
+      def initialize(parent, cfg = {})
         @tasks = []
         @name = cfg[:name]
         @subtasks_stopper = false
-        super cfg
+        super parent, cfg
       end
 
       def add_task(task)
