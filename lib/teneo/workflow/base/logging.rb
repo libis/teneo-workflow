@@ -2,10 +2,10 @@
 
 require "teneo/tools/logger"
 
-require_relative "../work_item"
-require_relative "../job"
-require_relative "../task"
-require_relative "../run"
+# require_relative "../work_item"
+# require_relative "../job"
+# require_relative "../task"
+# require_relative "../run"
 
 module Teneo
   module Workflow
@@ -27,8 +27,15 @@ module Teneo
           end
         end
 
-        def add_appender(**appender, &block)
-          super(**appender, formatter: Teneo::Workflow::Base::Logging::Formatter.new, &block)
+        module ClassMethods
+          def add_appender(**appender, &block)
+            super(**appender, formatter: Teneo::Workflow::Base::Logging::Formatter.new, &block)
+          end
+        end
+
+        def self.included(klass)
+          klass.include Teneo::Tools::Logger
+          klass.extend ClassMethods
         end
 
         def trace(message, *args, **opts)
@@ -76,7 +83,7 @@ module Teneo
 
         protected
 
-        def parse_message(message, *args, severity, item: nil, task: nil, run: nil, **)
+        def parse_message(message, *args, severity:, item: nil, task: nil, run: nil, **)
           item = item&.is_a?(Teneo::Workflow::WorkItem) ? item : nil
           item ||= self if self.is_a?(Teneo::Workflow::WorkItem)
           item ||= args.shift if args.first&.is_a?(Teneo::Workflow::WorkItem) || args.first&.is_a?(Teneo::Workflow::Job)

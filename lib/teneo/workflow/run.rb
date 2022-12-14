@@ -17,7 +17,9 @@ module Teneo
   module Workflow
     module Run
 
-      include Teneo::Workflow::Base::Logging
+      def self.included(klass)
+        klass.include Teneo::Workflow::Base::Logging
+      end
 
       ### Methods that need implementation in the including class
       # getter and setter accessors for:

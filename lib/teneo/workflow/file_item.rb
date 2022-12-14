@@ -5,7 +5,10 @@ require 'digest'
 module Teneo
   module Workflow
     module FileItem
-      include WorkItem
+
+      def self.included(klass)
+        klass.include WorkItem
+      end
 
       def fullpath
         properties[:filename] || name

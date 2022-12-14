@@ -43,8 +43,11 @@ module Teneo
     # ActiveRecord and Mongoid are known to implement these, but others may not.
     #
     module WorkItem
-      include Teneo::Workflow::Base::Logging
-      include Teneo::Workflow::Base::Status
+
+      def self.included(klass)
+        klass.include(Teneo::Workflow::Base::Logging)
+        klass.include(Teneo::Workflow::Base::Status)
+      end
 
       ### Methods that need implementation:
       # getter and setter accessors for:

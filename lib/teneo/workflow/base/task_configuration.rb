@@ -6,7 +6,10 @@ module Teneo
   module Workflow
     module Base
       module TaskConfiguration
-        include ::Teneo::Tools::Parameter::Container
+
+        def self.included(klass)
+          klass.include ::Teneo::Tools::Parameter::Container
+        end
 
         def configure(parameter_values)
           parameter_values.each do |name, value|

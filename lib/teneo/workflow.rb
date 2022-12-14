@@ -28,16 +28,18 @@ module Teneo
       autoload :TaskHierarchy, "teneo/workflow/base/task_hierarchy"
     end
 
-    def require_all(dir)
+    def self.require_all(dir)
       Dir.glob(File.join(dir, "*.rb")).each do |filename|
         require filename
       end
     end
 
+    include Base::Logging
+
     extend Dry::Configurable
 
     # The directory base path for items
-    setting :taskdir, default: "./items"
+    setting :itemdir, default: "./items"
 
     # The directory base path for tasks
     setting :taskdir, default: "./tasks"
@@ -50,5 +52,6 @@ module Teneo
 
     # The class implementing the message log
     setting :message_log, default: Class.new.include(Teneo::Workflow::MessageLog)
+
   end
 end
