@@ -45,7 +45,7 @@ require "teneo/tools/extensions/hash"
 # A minimal in-memory implementation could be:
 #
 # class Workflow
-#   include ::Teneo::Workflow::Base::Workflow
+#   include ::Teneo::Workflow::Workflow
 #
 #   attr_accessor :name, :description, :config
 #
@@ -71,63 +71,74 @@ module Teneo
         base.extend ClassMethods
       end
 
-      def configure(cfg)
-        cfg.key_symbols_to_strings!(recursive: true)
-        self.name = cfg.delete("name") || self.class.name
-        self.description = cfg.delete("description") || ""
-        self.config["input"] = {}
-        self.config["tasks"] = []
-        self.config.merge! cfg
+      def configure(input: {}, tasks: [])
+        config['input'] = input.deep_
+        config['tasks'] = tasks.deep_stringify_keys
+        config.merge! cfg
 
         self.class.require_all
 
-        self.config
+        config
       end
 
       def input
-        self.config.deep_symbolize_keys[:input].inject({}) do |hash, input_def|
+        config['input'].each_with_object({}) do |input_def, hash|
           name = input_def.first
-          default = input_def.last[:default]
-          parameter = ::Teneo::Tools::Parameter::Definition.new name, default
-          input_def.last.each { |k, v| parameter[k] = v }
+          default = input_def.last['default']
+          parameter = Teneo::Tools::Parameter::Definition.new(name: name, default: default)
+          input_def.last.each { |k, v| parameter[k.to_sym] = v }
           hash[name] = parameter
-          hash
         end
       rescue => _e
         {}
       end
 
       # @param [Hash] options
-      def prepare_input(options)
-        options = options.symbolize_keys
-        result = {}
-        self.input.each do |key, parameter|
-          value = nil
-          if options.has_key?(key)
-            value = parameter.parse(options[key])
+      def task_parameters(values, options = {})
+        data = values.stringify_keys
+        result = options.stringify_keys
+        input.each do |key, parameter|
+          value = if data.has_key?(key)
+            data[key]
+          elsif result.has_key?(key)
+            value = parameter.parse(result[key])
           elsif !parameter[:default].nil?
             value = parameter[:default]
           else
-            next
+            nil
           end
-          propagate_to = []
-          propagate_to = parameter[:propagate_to] if parameter[:propagate_to].is_a? Array
-          propagate_to = parameter[:propagate_to].split(/[\s,;]+/) if parameter[:propagate_to].is_a? String
+          propagate_to = parameter[:propagate_to]
+          propagate_to = case propagate_to
+          when Array
+            propagate_to
+          when String
+            propagate_to.split(/[\s,;]+/)
+          else
+            []
+          end
+          propagate_to = propagate_to.map do |obj|
+            if obj.is_a?(String)
+              task_name, param_name = obj.split("#")
+              obj = {
+                task: task_name,
+                parameter: param_name
+              }
+            end
+            obj[:parameter] ||=  key.to_s
+            obj
+          end
           result[key] = value if propagate_to.empty?
           propagate_to.each do |target|
-            task_name, param_name = target.split("#")
-            param_name ||= key.to_s
-            result[task_name] ||= {}
-            result[task_name][param_name] = value
+            result[target[:task]] ||= {}
+            result[target[:task]][:parameters] ||= {}
+            result[task_name][target[:parameter]] = value
           end
         end
         result
       end
 
       def tasks(parent = nil)
-        self.config["tasks"].map do |cfg|
-          instantize_task(parent || nil, cfg)
-        end
+        config["tasks"]
       end
 
       def instantize_task(parent, cfg)
@@ -135,7 +146,7 @@ module Teneo
         task_class = cfg["class"].constantize if cfg["class"]
         # noinspection RubyArgCount
         task_instance = task_class.new(parent, cfg)
-        cfg["tasks"] && cfg["tasks"].map do |task_cfg|
+        cfg["tasks"]&.map do |task_cfg|
           task_instance << instantize_task(task_instance, task_cfg)
         end
         task_instance

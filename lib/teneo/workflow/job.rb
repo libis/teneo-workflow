@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "teneo/tools/extensions/hash"
+
 # This is the base module for Jobs.
 #
 # This module lacks the implementation for the data attributes. It functions as an interface that describes the
@@ -28,10 +30,12 @@
 module Teneo
   module Workflow
     module Job
-
       ### Methods that need implementation in the including class
       # getter and setter accessors for:
       # - name
+      # - description
+      # - input
+      # - tasks
       # getter accessors for:
       # - workflow
       # - runs
@@ -42,6 +46,7 @@ module Teneo
       # - item_list
       # - make_run
       # - last_run
+      # - save!
 
       ### Derived methods
 
@@ -49,7 +54,7 @@ module Teneo
       def execute(*args)
         run = args.shift if args.first&.is_a?(Teneo::Workflow::Run)
         run ||= make_run(*args)
-        raise 'Could not create run' unless run
+        raise "Could not create run" unless run
 
         prepare(run, *args)
         perform(run, *args)
@@ -57,7 +62,13 @@ module Teneo
         run
       end
 
+      def configure(input: {})
+        self.input = input
+        self.tasks = workflow.task_parameters(self.input)
+      end
+
       def prepare(run, *args)
+        options = workflow.prepare_input(config['input'])
         run.configure_tasks(tasks, *args)
       end
 
@@ -66,14 +77,15 @@ module Teneo
         run.execute (opts[:action] || :start), *args
       end
 
-      def finish(_run, *_args); end
+      def finish(_run, *_args)
+      end
 
       def tasks
         workflow.tasks
       end
 
       def run_name(timestamp = Time.now)
-        "#{name}-#{timestamp.strftime('%Y%m%d%H%M%S')}"
+        "#{name}-#{timestamp.strftime("%Y%m%d%H%M%S")}"
       end
 
       def names
@@ -107,10 +119,6 @@ module Teneo
 
       def last_status(task)
         last_status_log(task)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
-      end
-
-      def logger
-        Teneo::Workflow.config.logger
       end
     end
   end
