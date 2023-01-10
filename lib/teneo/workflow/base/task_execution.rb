@@ -65,7 +65,7 @@ module Teneo
         end
 
         def process_item(item, *args)
-          return item if last_status(item: item)== :done && !run_always
+          return item if last_status(item: item) == :done && !run_always
 
           if pre_process(item, *args)
             set_status :started, item: item
@@ -73,7 +73,7 @@ module Teneo
           end
 
           run_subitems(item, *args) if recursive
-          set_status(:done, item: item) if status_equals(:started, item: item)
+          item.set_status(:done) if item.status_equals(:started)
 
           post_process item, *args
 

@@ -35,7 +35,7 @@ module Teneo
       ### Derived methods
 
       def runner
-        @runner ||= Teneo::Workflow::TaskRunner.new self
+        @runner ||= Teneo::Workflow::TaskRunner.new(self, **config)
       end
 
       def action
@@ -46,16 +46,17 @@ module Teneo
         properties[:action] = value.to_s
       end
 
-      def configure_tasks(tasks, *args)
+      def configure_tasks(tasks)
         config[:tasks] = tasks
-        runner.configure_tasks(tasks, *args)
       end
 
       # Execute the workflow.
       def execute(action = 'start', *args)
         properties[:action] = action
         save!
+        info('Executon started')
         runner.execute(job, *args)
+        info('Execution done')
       end
 
       def status_log
@@ -64,6 +65,20 @@ module Teneo
 
       def last_status(item = nil, task: runner.namepath)
         Teneo::Workflow.config.status_log.find_last(run: self, task: task, item: item)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
+      end
+
+      def items
+        job.items
+      end
+
+      def <<(item)
+        jobs << item
+      end
+
+      alias add_item <<
+
+      def size
+        job.size
       end
 
     end

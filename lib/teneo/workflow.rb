@@ -34,8 +34,6 @@ module Teneo
       end
     end
 
-    include Base::Logging
-
     extend Dry::Configurable
 
     # The directory base path for items

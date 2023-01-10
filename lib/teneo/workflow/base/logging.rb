@@ -27,15 +27,8 @@ module Teneo
           end
         end
 
-        module ClassMethods
-          def add_appender(**appender, &block)
-            super(**appender, formatter: Teneo::Workflow::Base::Logging::Formatter.new, &block)
-          end
-        end
-
-        def self.included(klass)
-          klass.include Teneo::Tools::Logger
-          klass.extend ClassMethods
+        def add_appender(**appender, &block)
+          super(**appender, formatter: Teneo::Workflow::Base::Logging::Formatter.new, &block)
         end
 
         def trace(message, *args, **opts)
@@ -53,6 +46,12 @@ module Teneo
         def info(message, *args, **opts)
           info = parse_message(message, *args, severity: :info, **opts)
           logger.info(message: info[:message], **opts)
+          to_message_log(**info)
+        end
+
+        def warn(message, *args, **opts)
+          info = parse_message(message, *args, severity: :warn, **opts)
+          logger.warn(message: info[:message], **opts)
           to_message_log(**info)
         end
 

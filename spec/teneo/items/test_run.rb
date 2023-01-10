@@ -5,15 +5,15 @@ require "teneo/workflow/run"
 class TestRun
   include Teneo::Workflow::Run
 
-  attr_accessor :name, :config
+  attr_accessor :name, :config, :options
 
-  attr_reader :job, :options, :properties
+  attr_reader :job, :properties
 
   def initialize(job, name = nil)
     @name = name || self.class.name
     @config = {}
     @job = job
-    @otions = {}
+    @options = {}
     @properties = {}
   end
 

@@ -74,9 +74,9 @@ module Teneo
         ObjectSpace.each_object(::Class).select { |klass| klass < self && !klass.is_a?(Teneo::Workflow::TaskGroup) }
       end
 
-      def initialize(parent, cfg = {})
+      def initialize(parent, **cfg)
         @parent = parent
-        configure cfg[:parameters] || {}
+        configure cfg[:parameters]
         @properties = cfg.dup
       end
 
@@ -127,13 +127,13 @@ module Teneo
         item.is_a? klass.to_s.constantize
       end
 
-      def status_log
-        Teneo::Workflow.config.status_log.find_all(task: self)
-      end
+      # def status_log
+      #   Teneo::Workflow.config.status_log.find_all(task: self)
+      # end
 
-      def last_status
-        Teneo::Workflow.config.status_log.find_all(run: self)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
-      end
+      # def last_status
+      #   Teneo::Workflow.config.status_log.find_all(run: self)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
+      # end
     end
   end
 end

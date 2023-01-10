@@ -9,29 +9,26 @@ module Teneo
 
       recursive false
 
-      def initialize(parent, cfg = {})
+      def initialize(parent, **cfg)
         @tasks = []
         @name = cfg[:name]
         @subtasks_stopper = false
-        super parent, cfg
+        super
+        configure_tasks(cfg[:tasks])
       end
 
       def add_task(task)
-        tasks << task
+        @tasks << task
         task.parent = self
       end
 
       alias << add_task
 
       def configure_tasks(tasks, *args)
-        tasks.each do |task|
+        (tasks || []).each do |task|
           task[:class] ||= 'Teneo::Workflow::TaskGroup'
-          task_obj = task[:class].constantize.new(task)
-          task_obj.configure(task[:parameters])
+          task_obj = task[:class].constantize.new(self, **task)
           self << task_obj
-          next unless task[:tasks]
-
-          task_obj.configure_tasks(task[:tasks], *args)
         end
       end
 

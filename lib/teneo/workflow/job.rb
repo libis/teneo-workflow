@@ -30,6 +30,7 @@ require "teneo/tools/extensions/hash"
 module Teneo
   module Workflow
     module Job
+
       ### Methods that need implementation in the including class
       # getter and setter accessors for:
       # - name
@@ -42,7 +43,7 @@ module Teneo
       # - items
       # - work_dir
       # instance methods:
-      # - <<
+      # - << / add_item
       # - item_list
       # - make_run
       # - last_run
@@ -55,7 +56,6 @@ module Teneo
         run = args.shift if args.first&.is_a?(Teneo::Workflow::Run)
         run ||= make_run(*args)
         raise "Could not create run" unless run
-
         prepare(run, *args)
         perform(run, *args)
         finish(run, *args)
@@ -64,12 +64,11 @@ module Teneo
 
       def configure(input: {})
         self.input = input
-        self.tasks = workflow.task_parameters(self.input)
       end
 
       def prepare(run, *args)
-        options = workflow.prepare_input(config['input'])
-        run.configure_tasks(tasks, *args)
+        run.options = workflow.prepare_input(self.input)
+        run.configure_tasks(workflow.tasks)
       end
 
       def perform(run, *args)
@@ -82,6 +81,10 @@ module Teneo
 
       def tasks
         workflow.tasks
+      end
+
+      def size
+        items.size
       end
 
       def run_name(timestamp = Time.now)

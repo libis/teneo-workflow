@@ -7,26 +7,32 @@ require_relative 'test_run'
 class TestJob
   include Teneo::Workflow::Job
 
-  attr_accessor :name, :description, :config
+  attr_accessor :name, :description, :input, :tasks
 
   attr_reader :workflow, :runs, :items, :work_dir
 
   def initialize(workflow)
     @name = "TestJob"
     @description = ''
-    @config = {}
+    @input = {}
+    @tasks = []
     @workflow = workflow
     @runs = []
     @items = []
     @work_dir = File.join(Teneo::Workflow.config.workdir, @name)
   end
 
-  def <<(run)
-    @runs << run
+  def <<(item)
+    @items << item
   end
 
+  alias add_item <<
+
   def make_run
-    TestRun.new(self, run_name)
+    run = TestRun.new(self, run_name)
+    @runs << run
+    run.save!
+    run
   end
 
   def last_run

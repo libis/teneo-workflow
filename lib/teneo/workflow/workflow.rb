@@ -72,9 +72,8 @@ module Teneo
       end
 
       def configure(input: {}, tasks: [])
-        config['input'] = input.deep_
-        config['tasks'] = tasks.deep_stringify_keys
-        config.merge! cfg
+        config[:input] = input.deep_symbolize_keys
+        config[:tasks] = tasks.map(&:deep_symbolize_keys)
 
         self.class.require_all
 
@@ -82,15 +81,31 @@ module Teneo
       end
 
       def input
-        config['input'].each_with_object({}) do |input_def, hash|
+        config[:input].each_with_object({}) do |input_def, hash|
           name = input_def.first
-          default = input_def.last['default']
+          default = input_def.last[:default]
           parameter = Teneo::Tools::Parameter::Definition.new(name: name, default: default)
           input_def.last.each { |k, v| parameter[k.to_sym] = v }
-          hash[name] = parameter
+          hash[name.to_s] = parameter
         end
       rescue => _e
         {}
+      end
+
+      def prepare_input(input)
+        config[:params] = task_parameters(input)
+        apply_parameters(config[:tasks], config[:params])
+        config[:params]
+      end
+
+      def apply_parameters(task_list, params)
+        (task_list || []).each do |task|
+          p = params[task[:class]] || params[task[:name]]
+          if p
+            task[:parameters] = p[:parameters] if p[:parameters]
+            apply_parameters(task[:tasks], p.except(:parameters))
+          end
+        end
       end
 
       # @param [Hash] options
@@ -104,8 +119,6 @@ module Teneo
             value = parameter.parse(result[key])
           elsif !parameter[:default].nil?
             value = parameter[:default]
-          else
-            nil
           end
           propagate_to = parameter[:propagate_to]
           propagate_to = case propagate_to
@@ -124,30 +137,36 @@ module Teneo
                 parameter: param_name
               }
             end
-            obj[:parameter] ||=  key.to_s
+            obj[:parameter] ||= key.to_s
             obj
           end
           result[key] = value if propagate_to.empty?
           propagate_to.each do |target|
-            result[target[:task]] ||= {}
-            result[target[:task]][:parameters] ||= {}
-            result[task_name][target[:parameter]] = value
+            task_list = target[:task].split('/')
+            r = result
+            task_list.each do |t|
+              r[t] ||= {}
+              r = r[t]
+            end
+            (r[:parameters] ||= {})[target[:parameter]] = value
           end
         end
         result
       end
 
-      def tasks(parent = nil)
-        config["tasks"]
+      def tasks
+        config[:tasks]
       end
 
       def instantize_task(parent, cfg)
         task_class = Teneo::Workflow::TaskGroup
-        task_class = cfg["class"].constantize if cfg["class"]
+        task_class = cfg[:class].constantize if cfg[:class]
+        task_name = cfg[:name] || task_class
+        task_params = params
         # noinspection RubyArgCount
         task_instance = task_class.new(parent, cfg)
-        cfg["tasks"]&.map do |task_cfg|
-          task_instance << instantize_task(task_instance, task_cfg)
+        cfg[:tasks]&.map do |task_cfg|
+          task_instance << instantize_task(task_instance, task_cfg, params)
         end
         task_instance
       end

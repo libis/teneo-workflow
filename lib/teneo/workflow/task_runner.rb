@@ -9,9 +9,9 @@ module Teneo
       abort_on_failure false
       recursive false
 
-      def initialize(run, cfg = {})
+      def initialize(run, **cfg)
         @run = run
-        super run, cfg
+        super
       end
 
       def run

@@ -2,13 +2,45 @@
 
 require "stringio"
 require "semantic_logger"
-# require 'awesome_print'
+require 'awesome_print'
 
 basedir = File.absolute_path File.join(File.dirname(__FILE__))
 dirname = File.join(basedir, "items")
-logoutput = StringIO.new
-Teneo::Workflow.clear_appenders!
-Teneo::Workflow.add_appender(io: logoutput, level: :info)
+SemanticLogger.default_level = :trace
+
+def show(run)
+  puts 'run'
+  ap run
+  puts ' - config'
+  ap run.config
+  puts ' - options'
+  ap run.options
+  puts ' - properties'
+  ap run.properties
+  job = run.job
+  puts 'job'
+  ap job
+  puts ' - input'
+  ap job.input
+  puts ' - tasks'
+  ap job.tasks
+  puts ' - items'
+  ap job.items
+  workflow = job.workflow
+  puts 'workflow'
+  ap workflow
+  puts ' - config'
+  ap workflow.config
+  runner = run.runner
+  puts 'runner'
+  ap runner
+  puts ' - tasks'
+  ap runner.tasks
+  puts 'output:'
+  ap @logoutput.string.lines.to_a.map { |x| x[/(?<=\] ).*/].strip }
+  puts 'status_log:'
+  run.status_log.each { |e| ap e }
+end
 
 def check_output(logoutput, sample_out)
   sample_out = sample_out.lines.to_a.map { |x| x.strip }
@@ -47,7 +79,6 @@ RSpec.describe Teneo::Workflow do
         cfg.workdir = File.join(basedir, "work")
       end
       Teneo::Workflow.require_all(dirname)
-      logoutput.reopen
     end
 
     let(:workflow) {
@@ -81,15 +112,25 @@ RSpec.describe Teneo::Workflow do
       job
     }
 
+    let(:run) {
+      r = job.make_run
+      @logoutput = StringIO.new
+      r.add_appender(io: @logoutput, level: :info)
+      r.add_appender(io: $stdout, level: :debug)
+      job.execute(r)
+      r.flush
+      r
+    }
+
     it "should contain three tasks" do
-      expect(workflow.config["tasks"].size).to eq 2
-      expect(workflow.config["tasks"].first["class"]).to eq "CollectFiles"
-      expect(workflow.config["tasks"].last["name"]).to eq "ProcessFiles"
+      expect(workflow.config[:tasks].size).to eq 2
+      expect(workflow.config[:tasks].first[:class]).to eq "CollectFiles"
+      expect(workflow.config[:tasks].last[:name]).to eq "ProcessFiles"
     end
 
     it "should camelize the workitem name" do
-      run = job.execute
-      expect(run.options["CollectFiles"]["location"]).to eq dirname
+      show run
+      expect(run.options["CollectFiles"][:parameters]["location"]).to eq dirname
       expect(run.size).to eq 1
       expect(run.items.size).to eq 1
       expect(run.items.first.class).to eq TestDirItem
@@ -97,17 +138,18 @@ RSpec.describe Teneo::Workflow do
       expect(run.items.first.items.size).to eq 3
       expect(run.items.first.first.class).to eq TestFileItem
 
-      expect(run.items.first.name).to eq "Items"
+      expect(run.job.items.first.name).to eq "Items"
 
-      run.items.first.each_with_index do |x, i|
+      run.job.items.first.each_with_index do |x, i|
         expect(x.name).to eq %w[TestDirItem.rb TestFileItem.rb TestRun.rb][i]
       end
     end
 
     it "should return expected debug output" do
-      run = job.execute
+      run
 
-      check_output logoutput, <<~STR
+      show run
+      check_output @logoutput, <<~STR
          INFO -- Run - TestRun : Ingest run started.
          INFO -- Run - TestRun : Running subtask (1/2): CollectFiles
         DEBUG -- CollectFiles - TestRun : Processing subitem (1/1): items
@@ -163,9 +205,6 @@ RSpec.describe Teneo::Workflow do
         cfg.itemdir = dirname
         cfg.taskdir = File.join(basedir, "tasks")
         cfg.workdir = File.join(basedir, "work")
-        Teneo::Workflow.clear_appenders!
-        Teneo::Workflow.add_appender io: logoutput, level: :info
-        logoutput.reopen("")
       end
       Teneo::Workflow.require_all(dirname)
     end
@@ -181,7 +220,7 @@ RSpec.describe Teneo::Workflow do
         ],
         input: {
           dirname: {default: ".", propagate_to: [{task: "CollectFiles", parameter: "location"}]},
-          processing: {default: "success", propagate_to: [{task:"ProcessingTask", parameter:"config"]},
+          processing: {default: "success", propagate_to: [{task:"ProcessingTask", parameter:"config"}]},
           force_run: {default: false, propagate_to: [{task:"FinalTask", parameter: "run_always"}]}
         }
       )
@@ -200,7 +239,18 @@ RSpec.describe Teneo::Workflow do
       job
     }
 
-    let(:run) { job.execute }
+    let(:run) {
+      r = job.make_run
+      r.clear_appenders!
+      @logoutput = StringIO.new
+      r.add_appender(io: @logoutput, level: :info)
+      r.add_appender(io: $stdout, level: :debug)
+      r.reopen
+      job.execute(r)
+      r.flush
+      r
+    }
+
 
     context "without forcing final task" do
       let(:force_run) { false }
@@ -211,7 +261,8 @@ RSpec.describe Teneo::Workflow do
         it "should run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
             INFO -- Run - TestRun : Ingest run started.
             INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
             INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -252,7 +303,8 @@ RSpec.describe Teneo::Workflow do
         it "should not run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -289,7 +341,8 @@ RSpec.describe Teneo::Workflow do
         it "should not run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -326,7 +379,8 @@ RSpec.describe Teneo::Workflow do
         it "should not run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -363,7 +417,8 @@ RSpec.describe Teneo::Workflow do
         it "should not run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -402,7 +457,8 @@ RSpec.describe Teneo::Workflow do
         it "should run final task" do
           run
 
-          check_output logoutput, <<STR
+          show run
+          check_output @logoutput, <<STR
  INFO -- Run - TestRun : Ingest run started.
  INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
  INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -443,7 +499,8 @@ STR
         it "should run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -487,7 +544,8 @@ STR
         it "should run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -526,10 +584,11 @@ STR
         it "should run final task during retry" do
           run
 
-          logoutput.truncate(0)
+          @logoutput.truncate(0)
           run.run :retry
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
             ERROR -- ProcessingTask - TestRun : Task failed with failed status
@@ -578,7 +637,8 @@ STR
         it "should run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
@@ -621,7 +681,8 @@ STR
         it "should run final task" do
           run
 
-          check_output logoutput, <<~STR
+          show run
+          check_output @logoutput, <<~STR
              INFO -- Run - TestRun : Ingest run started.
              INFO -- Run - TestRun : Running subtask (1/3): CollectFiles
              INFO -- Run - TestRun : Running subtask (2/3): ProcessingTask
