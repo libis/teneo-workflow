@@ -2,6 +2,9 @@
 
 require "teneo/tools/extensions/hash"
 
+require_relative 'base/logging'
+require_relative 'base/status'
+
 # This is the base module for Jobs.
 #
 # This module lacks the implementation for the data attributes. It functions as an interface that describes the
@@ -30,6 +33,11 @@ require "teneo/tools/extensions/hash"
 module Teneo
   module Workflow
     module Job
+
+      def self.included(klass)
+        klass.include(Teneo::Workflow::Base::Logging)
+        klass.include(Teneo::Workflow::Base::Status)
+      end
 
       ### Methods that need implementation in the including class
       # getter and setter accessors for:
@@ -122,6 +130,10 @@ module Teneo
 
       def last_status(task)
         last_status_log(task)&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
+      end
+
+      def run
+        last_run
       end
     end
   end

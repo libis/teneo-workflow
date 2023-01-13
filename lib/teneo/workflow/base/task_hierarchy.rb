@@ -79,7 +79,7 @@ module Teneo
         private
 
         def subitems(item)
-          item.item_list
+          item.items
         end
       end
     end

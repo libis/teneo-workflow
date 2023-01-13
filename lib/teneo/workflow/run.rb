@@ -54,9 +54,7 @@ module Teneo
       def execute(action = 'start', *args)
         properties[:action] = action
         save!
-        info('Executon started')
         runner.execute(job, *args)
-        info('Execution done')
       end
 
       def status_log
@@ -79,6 +77,10 @@ module Teneo
 
       def size
         job.size
+      end
+
+      def run
+        self
       end
 
     end

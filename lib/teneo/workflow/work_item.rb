@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require 'libis/tools/extend/array'
-require 'libis/tools/extend/hash'
+require 'teneo/tools/extensions/hash'
 
 require_relative 'base/logging'
 require_relative 'base/status'
@@ -133,6 +132,10 @@ module Teneo
 
       def job
         parent&.job
+      end
+
+      def run
+        job.run
       end
 
     end

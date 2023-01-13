@@ -27,6 +27,10 @@ module Teneo
           end
         end
 
+        def logger_name
+          self.run.name
+        end
+
         def add_appender(**appender, &block)
           super(**appender, formatter: Teneo::Workflow::Base::Logging::Formatter.new, &block)
         end

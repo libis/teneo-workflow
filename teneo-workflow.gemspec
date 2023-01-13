@@ -32,6 +32,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "dry-configurable", "~> 0.0"
-  spec.add_runtime_dependency "teneo-tools", "~> 0.1.1"
+  spec.add_runtime_dependency "teneo-tools", "~> 0.1.4"
   spec.add_runtime_dependency "ruby-enum", "~> 0.9"
 end
