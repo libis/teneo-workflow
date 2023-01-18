@@ -71,6 +71,7 @@ module Teneo
           info = resolve_info
           Teneo::Workflow.config.find_all_last(**info)
         end
+        
         def resolve_info(run: nil, task: nil, item: nil)
           run ||= self if self.is_a?(Teneo::Workflow::Run)
           task ||= self if self.is_a?(Teneo::Workflow::Task)

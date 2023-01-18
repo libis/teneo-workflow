@@ -36,11 +36,11 @@ module Teneo
               set_status :failed, item: item
               error 'Error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
             rescue Teneo::Workflow::Abort => e
-              fatal_error 'Fatal error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
+              fatal 'Fatal error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
               set_status :failed, item: item
               break
             rescue StandardError => e
-              fatal_error 'Unexpected error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
+              fatal 'Unexpected error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
               set_status :failed, item: item
               raise Teneo::Workflow::Abort, "#{e.message} @ #{e.backtrace.first}"
             ensure

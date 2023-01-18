@@ -11,7 +11,7 @@ class CollectFiles < ::Teneo::Workflow::Task
     description: "Only select files that match the given regular expression. Ignored if empty."
 
   def process(item)
-    if item.is_a? TestRun
+    if item.is_a? TestJob
       add_item(item, parameter(:location))
     elsif item.is_a? TestDirItem
       collect_files(item, item.fullpath)

@@ -27,7 +27,7 @@ module Teneo
           raise e if parent
         rescue StandardError => e
           set_status :failed, item: item
-          fatal_error "Exception occured: #{e.message}", item
+          fatal "Exception occured: #{e.message}", item
           debug e.backtrace.join("\n")
         end
 

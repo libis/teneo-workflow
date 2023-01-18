@@ -11,64 +11,29 @@ module Teneo
   module Workflow
     module Base
       module Logging
-        include Teneo::Tools::Logger
 
-        class Formatter < Teneo::Tools::Logger::Formatter
-          def task_name
-            log.payload? ? "#{log.payload.delete(:task_name)} -" : nil
-          end
-
-          def item_name
-            log.payload? ? "#{log.payload(:item_name)} :" : nil
-          end
-
-          def message
-            ["--", task_name, item_name, log.message].compact.join(" ")
-          end
+        def self.included(klass)
+          klass.include Teneo::Tools::Logger
         end
+        
 
         def logger_name
           self.run.name
         end
 
-        def add_appender(**appender, &block)
-          super(**appender, formatter: Teneo::Workflow::Base::Logging::Formatter.new, &block)
-        end
-
-        def trace(message, *args, **opts)
-          info = parse_message(message, *args, severity: :trace, **opts)
-          logger.trace(message: info[:message], **opts)
-          to_message_log(**info)
-        end
-
-        def debug(message, *args, **opts)
-          info = parse_message(message, *args, severity: :debug, **opts)
-          logger.debug(message: info[:message], **opts)
-          to_message_log(**info)
-        end
-
-        def info(message, *args, **opts)
-          info = parse_message(message, *args, severity: :info, **opts)
-          logger.info(message: info[:message], **opts)
-          to_message_log(**info)
-        end
-
-        def warn(message, *args, **opts)
-          info = parse_message(message, *args, severity: :warn, **opts)
-          logger.warn(message: info[:message], **opts)
-          to_message_log(**info)
-        end
-
-        def error(message, *args, **opts)
-          info = parse_message(message, *args, severity: :error, **opts)
-          logger.error(message: info[:message], **opts)
-          to_message_log(**info)
-        end
-
-        def fatal_error(message, *args, **opts)
-          info = parse_message(message, *args, severity: :fatal, **opts)
-          logger.fatal(message: info[:message], **opts)
-          to_message_log(**info)
+        def build_logger_event(*args, **opts)
+          item = opts.delete(:item)
+          task = opts.delete(:task)
+          run = opts.delete(:run)
+          items, args = args.partition {|x| x.is_a?(Teneo::Workflow::WorkItem) || x.is_a?(Teneo::Workflow::Job)}
+          item ||= items.first
+          tasks, args = args.partition {|x| x.is_a?(Teneo::Workflow::Task)}
+          task ||= tasks.first
+          runs, args = args.partition { |x| x.is_a?(Teneo::Workflow::Run)}
+          run ||= runs.first
+          event = super(*args, **opts)
+          event = to_message_log(event, item: item, task: task, run: run)
+          event
         end
 
         def logger
@@ -86,7 +51,7 @@ module Teneo
 
         protected
 
-        def parse_message(message, *args, severity:, item: nil, task: nil, run: nil, **)
+        def parse_message(event, item:, task:, run:)
           item = item&.is_a?(Teneo::Workflow::WorkItem) ? item : nil
           item ||= self if self.is_a?(Teneo::Workflow::WorkItem)
           item ||= args.shift if args.first&.is_a?(Teneo::Workflow::WorkItem) || args.first&.is_a?(Teneo::Workflow::Job)
@@ -95,13 +60,13 @@ module Teneo
           task ||= args.shift if args.first&.is_a?(Teneo::Workflow::Task)
           run = run&.is_a?(Teneo::Workflow::Run) ? item : nil
           run ||= task&.run
-          message = (message % args rescue "#{message}#{args.empty? ? "" : " - #{args}"}")
+          message = event.message
           {
             item: item,
             task: task,
             run: run,
             message: message,
-            severity: severity,
+            severity: event.severity,
             task_name: task&.namepath,
             item_name: item&.namepath || run&.name,
           }
@@ -110,9 +75,12 @@ module Teneo
         PARAM_KEYS = [:message, :severity, :item, :task, :run]
         REJECT_KEYS = [:task_name, :item_name]
 
-        def to_message_log(**info)
+        def to_message_log(event, item:, task:, run:)
+          info = parse_message(event, item: item, task: task, run: run)
+          event.context = "#{info[:task_name]} - #{info[:item_name]}"
           params, data = info.except(*REJECT_KEYS).partition { |k, v| PARAM_KEYS.include?(k) }
           Teneo::Workflow.config.message_log.add_entry(data: Hash[data], **Hash[params])
+          event
         end
       end
     end

@@ -7,7 +7,7 @@ require_relative 'test_run'
 class TestJob
   include Teneo::Workflow::Job
 
-  attr_accessor :name, :description, :input, :tasks
+  attr_accessor :name, :description, :input
 
   attr_reader :workflow, :runs, :items, :work_dir
 
@@ -15,7 +15,6 @@ class TestJob
     @name = "TestJob"
     @description = ''
     @input = {}
-    @tasks = []
     @workflow = workflow
     @runs = []
     @items = []
@@ -24,6 +23,7 @@ class TestJob
 
   def <<(item)
     @items << item
+    item.parent = self
   end
 
   alias add_item <<

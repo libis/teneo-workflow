@@ -44,7 +44,6 @@ module Teneo
       # - name
       # - description
       # - input
-      # - tasks
       # getter accessors for:
       # - workflow
       # - runs
@@ -85,10 +84,6 @@ module Teneo
       end
 
       def finish(_run, *_args)
-      end
-
-      def tasks
-        workflow.tasks
       end
 
       def size

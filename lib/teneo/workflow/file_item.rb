@@ -29,7 +29,7 @@ module Teneo
         properties[:size] = stats.size
         properties[:modification_time] = stats.mtime
 
-        add_checksum :MD5
+        checksum :MD5, true
       end
 
       def own_file(v = true)
@@ -44,19 +44,22 @@ module Teneo
         filelist.join('/')
       end
 
-      def checksum(checksum_type)
-        properties[('checksum_' + checksum_type.to_s.downcase).to_sym]
-      end
-
-      def add_checksum(checksum_type)
-        return unless File.file?(fullpath)
-        hasher = Digest(checksum_type).new
-        hasher.file(fullpath)
-        set_checksum checksum_type, hasher.hexdigest!
-      end
-
-      def set_checksum(checksum_type, value)
-        properties[('checksum_' + checksum_type.to_s.downcase).to_sym] = value
+      # value is String or true to force recalculate or false to delete
+      # calculates the checksum if not known unless value is false
+      def checksum(checksum_type, value = nil)
+        key = "checksum_#{checksum_type}".downcase.to_sym
+        case value
+        when FalseClass
+          properties.delete(key) if value == false
+          return nil
+        when TrueClass
+          properties.delete(key) if value == false
+        when String
+          properties[key] = value
+        end
+        file = properties[:filename]
+        properties[key] ||= ::Teneo::Tools::Checksum.hexdigest(file, checksum_type) if File.file?(file)
+        properties[key]
       end
 
       def link
