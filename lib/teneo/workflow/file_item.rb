@@ -21,7 +21,7 @@ module Teneo
       def filename=(file)
         delete_file
         properties[:filename] = file
-        self.name ||= File.basename(file)
+        self.name = File.basename(file) if self.name.nil? or self.name.blank?
 
         return unless File.exist?(file)
 

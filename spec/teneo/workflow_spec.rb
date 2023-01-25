@@ -177,9 +177,9 @@ RSpec.describe Teneo::Workflow do
       expect(run.size).to eq 1
       expect(run.items.size).to eq 1
       expect(run.items.first.class).to eq TestDirItem
-      expect(run.items.first.size).to eq 3
-      expect(run.items.first.items.size).to eq 3
-      expect(run.items.first.first.class).to eq TestFileItem
+      expect(run.items.first.size).to eq 5
+      expect(run.items.first.items.size).to eq 5
+      expect(run.items.first.items.first.class).to eq TestFileItem
 
       expect(run.job.items.first.name).to eq "Items"
 
@@ -196,25 +196,31 @@ RSpec.describe Teneo::Workflow do
                       INFO -- Run - TestRun : Ingest run started.
                       INFO -- Run - TestRun : Running subtask (1/2): CollectFiles
                      DEBUG -- CollectFiles - TestRun : Processing subitem (1/1): items
-                     DEBUG -- CollectFiles - items : Processing subitem (1/3): test_dir_item.rb
-                     DEBUG -- CollectFiles - items : Processing subitem (2/3): test_file_item.rb
-                     DEBUG -- CollectFiles - items : Processing subitem (3/3): test_run.rb
-                     DEBUG -- CollectFiles - items : 3 of 3 subitems passed
+                     DEBUG -- CollectFiles - items : Processing subitem (1/5): test_dir_item.rb
+                     DEBUG -- CollectFiles - items : Processing subitem (2/5): test_file_item.rb
+                     DEBUG -- CollectFiles - items : Processing subitem (3/5): test_job.rb
+                     DEBUG -- CollectFiles - items : Processing subitem (4/5): test_run.rb
+                     DEBUG -- CollectFiles - items : Processing subitem (5/5): test_workflow.rb
+                     DEBUG -- CollectFiles - items : 5 of 5 subitems passed
                      DEBUG -- CollectFiles - TestRun : 1 of 1 subitems passed
                       INFO -- Run - TestRun : Running subtask (2/2): ProcessFiles
                       INFO -- ProcessFiles - TestRun : Running subtask (1/2): ChecksumTester
                      DEBUG -- ProcessFiles/ChecksumTester - TestRun : Processing subitem (1/1): items
-                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (1/3): test_dir_item.rb
-                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (2/3): test_file_item.rb
-                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (3/3): test_run.rb
-                     DEBUG -- ProcessFiles/ChecksumTester - items : 3 of 3 subitems passed
+                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (1/5): test_dir_item.rb
+                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (2/5): test_file_item.rb
+                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (3/5): test_job.rb
+                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (4/5): test_run.rb
+                     DEBUG -- ProcessFiles/ChecksumTester - items : Processing subitem (5/5): test_workflow.rb
+                     DEBUG -- ProcessFiles/ChecksumTester - items : 5 of 5 subitems passed
                      DEBUG -- ProcessFiles/ChecksumTester - TestRun : 1 of 1 subitems passed
                       INFO -- ProcessFiles - TestRun : Running subtask (2/2): CamelizeName
                      DEBUG -- ProcessFiles/CamelizeName - TestRun : Processing subitem (1/1): items
-                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (1/3): test_dir_item.rb
-                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (2/3): test_file_item.rb
-                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (3/3): test_run.rb
-                     DEBUG -- ProcessFiles/CamelizeName - Items : 3 of 3 subitems passed
+                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (1/5): test_dir_item.rb
+                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (2/5): test_file_item.rb
+                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (3/5): test_job.rb
+                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (4/5): test_run.rb
+                     DEBUG -- ProcessFiles/CamelizeName - Items : Processing subitem (5/5): test_workflow.rb
+                     DEBUG -- ProcessFiles/CamelizeName - Items : 5 of 5 subitems passed
                      DEBUG -- ProcessFiles/CamelizeName - TestRun : 1 of 1 subitems passed
                       INFO -- ProcessFiles - TestRun : Done
                       INFO -- Run - TestRun : Done
@@ -229,9 +235,9 @@ RSpec.describe Teneo::Workflow do
       ]
 
       check_status_log run.items.first.status_log, [
-        { task: "CollectFiles", status: :DONE, progress: 3, max: 3 },
-        { task: "ProcessFiles/ChecksumTester", status: :DONE, progress: 3, max: 3 },
-        { task: "ProcessFiles/CamelizeName", status: :DONE, progress: 3, max: 3 },
+        { task: "CollectFiles", status: :DONE, progress: 5, max: 5 },
+        { task: "ProcessFiles/ChecksumTester", status: :DONE, progress: 5, max: 5 },
+        { task: "ProcessFiles/CamelizeName", status: :DONE, progress: 5, max: 5 },
       ]
 
       check_status_log run.items.first.items.first.status_log, [
