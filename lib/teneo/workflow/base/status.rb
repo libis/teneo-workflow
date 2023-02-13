@@ -18,7 +18,7 @@ module Teneo
         # @return [Teneo::Workflow::Status] updated or created status entry
         def status_progress(progress = nil, max: nil, task: nil, item: nil)
           if entry = last_status(task: task, item: item)
-            entry.update_status({ progress: progress || entry.progress + 1, max: max }.compact)
+            entry.update_status(**{ progress: progress || entry.progress + 1, max: max }.compact)
           else
             set_status(:started, task: task, item: item, progress: progress, max: max)
           end
