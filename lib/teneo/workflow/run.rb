@@ -69,12 +69,6 @@ module Teneo
         job.items
       end
 
-      def <<(item)
-        jobs << item
-      end
-
-      alias add_item <<
-
       def size
         job.size
       end
