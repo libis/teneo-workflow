@@ -14,50 +14,50 @@ module Teneo
 
         def self.included(klass)
           klass.include Teneo::Tools::Logger
+          klass.include InstanceMethods
         end
         
+        module InstanceMethods
+          def logger_name
+            self.run.name
+          end
 
-        def logger_name
-          self.run.name
-        end
+          def logger
+            case self
+            when Teneo::Workflow::Run
+              super
+            when Teneo::Workflow::Task
+              self.run&.logger
+            when Teneo::Workflow::WorkItem
+              self.job&.last_run&.logger
+            else
+              super
+            end
+          end
 
-        def build_logger_event(*args, **opts)
-          item = opts.delete(:item)
-          task = opts.delete(:task)
-          run = opts.delete(:run)
-          items, args = args.partition {|x| x.is_a?(Teneo::Workflow::WorkItem) || x.is_a?(Teneo::Workflow::Job)}
-          item ||= items.first
-          tasks, args = args.partition {|x| x.is_a?(Teneo::Workflow::Task)}
-          task ||= tasks.first
-          runs, args = args.partition { |x| x.is_a?(Teneo::Workflow::Run)}
-          run ||= runs.first
-          event = super(*args, **opts)
-          event = to_message_log(event, item: item, task: task, run: run)
-          event
-        end
-
-        def logger
-          case self
-          when Teneo::Workflow::Run
-            super
-          when Teneo::Workflow::Task
-            self.run&.logger
-          when Teneo::Workflow::WorkItem
-            self.job&.last_run&.logger
-          else
-            super
+          def build_logger_event(*args, **opts)
+            item = opts.delete(:item)
+            task = opts.delete(:task)
+            run = opts.delete(:run)
+            items, args = args.partition {|x| x.is_a?(Teneo::Workflow::WorkItem) || x.is_a?(Teneo::Workflow::Job)}
+            item ||= items.first
+            tasks, args = args.partition {|x| x.is_a?(Teneo::Workflow::Task)}
+            task ||= tasks.first
+            runs, args = args.partition { |x| x.is_a?(Teneo::Workflow::Run)}
+            run ||= runs.first
+            event = super(*args, **opts)
+            event = to_message_log(event, item: item, task: task, run: run)
+            event
           end
         end
-
+  
         protected
 
         def parse_message(event, item:, task:, run:)
           item = item&.is_a?(Teneo::Workflow::WorkItem) ? item : nil
           item ||= self if self.is_a?(Teneo::Workflow::WorkItem)
-          item ||= args.shift if args.first&.is_a?(Teneo::Workflow::WorkItem) || args.first&.is_a?(Teneo::Workflow::Job)
           task = task&.is_a?(Teneo::Workflow::Task) ? task : nil
           task ||= self if self.is_a?(Teneo::Workflow::Task)
-          task ||= args.shift if args.first&.is_a?(Teneo::Workflow::Task)
           run = run&.is_a?(Teneo::Workflow::Run) ? item : nil
           run ||= task&.run
           message = event.message
