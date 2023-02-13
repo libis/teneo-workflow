@@ -2,6 +2,8 @@
 
 require 'digest'
 
+require 'teneo/tools/extensions/blank'
+
 module Teneo
   module Workflow
     module FileItem
