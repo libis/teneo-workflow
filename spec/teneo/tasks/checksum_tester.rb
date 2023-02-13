@@ -10,7 +10,7 @@ class ChecksumTester < ::Teneo::Workflow::Task
   def process(item)
     return unless item.is_a? TestFileItem
 
-    checksum_type = parameter(:checksum_type)
+    checksum_type = parameter(:checksum_type).to_sym
 
     if checksum_type.nil?
       ::Teneo::Tools::Checksum::CHECKSUM_TYPES.each do |x|
