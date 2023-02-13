@@ -10,7 +10,7 @@ class TestRun
   attr_reader :job, :properties
 
   def initialize(job, name = nil)
-    @name = name || self.class.name
+    @name = self.class.name
     @config = {}
     @job = job
     @options = {}
