@@ -8,50 +8,62 @@ require "amazing_print"
 
 
 basedir = File.absolute_path File.join(File.dirname(__FILE__))
+datadir = File.join(basedir, "data")
 dirname = File.join(basedir, "items")
 
-TestStatusLog = Struct.new(:status, :run, :task, :item, :progress, :max, keyword_init: true) do
+TestStatusLog = Struct.new(:status, :progress, :max, :time, keyword_init: true) do
   include Teneo::Workflow::StatusLog
 
-  def initialize(status: nil, run: nil, task: nil, item: nil, progress: nil, max: nil)
-    task = task.namepath if task.is_a?(Teneo::Workflow::Task)
-    item = item.namepath if item.is_a?(Teneo::Workflow::WorkItem) || item.is_a?(Teneo::Workflow::Job)
-    run = run.name if run.is_a?(Teneo::Workflow::Run)
-    super status: status, run: run, task: task, item: item, progress: progress, max: max
+  def initialize(status: nil, progress: nil, max: nil)
+    super status: status, progress: progress, max: max, time: Time.now
   end
 
   def update_status(status: nil, progress: nil, max: nil)
     self.status = status if status
     self.progress = progress if progress
     self.max = max if max
+    self.time = Time.now
   end
 
   def self.status_list
-    @status_list ||= []
+    @status_list ||= {}
   end
 
   def self.create_status(**info)
+    key, info = parse_info(**info)
     entry = self.new(**info)
-    status_list << entry
-    entry
+    status_list[key] = entry
+    key.merge(entry.to_h)
   end
 
   def self.find_last(**info)
-    i = info.compact
-    status_list.reverse.find do |x|
-      i.keys.all? {|k| x[k] == i[k]}
-    end
+    self.find_all(**info).values.sort_by {|v| v&.time}.last
   end
 
   def self.find_all(**info)
     i = info.compact
-    status_list.reverse.select do |x|
-      i.keys.all? {|k| x[k] == i[k]}
-    end.reverse
+    status_list.select do |k,v|
+      i.keys.all? {|i_key| k[i_key] == i[i_key]}
+    end
   end
 
   def self.find_all_last(**info)
-    self.find_all(**info).last
+    self.find_last(**info)
+  end
+
+  def self.clear!
+    @status_list = {}
+  end
+
+  def self.parse_info(**info)
+    task = info.delete(:task)
+    task = task.namepath if task.is_a?(Teneo::Workflow::Task)
+    item = info.delete(:item)
+    item = item.namepath if item.is_a?(Teneo::Workflow::WorkItem) || item.is_a?(Teneo::Workflow::Job)
+    run = info.delete(:run)
+    run = run.name if run.is_a?(Teneo::Workflow::Run)
+    key = {run: run, task: task, item: item}
+    [key, info]
   end
 
 end
@@ -149,7 +161,7 @@ RSpec.describe Teneo::Workflow do
       job = TestJob.new(workflow)
       job.description = "Job for testing"
       job.configure(
-        input: { dirname: dirname, checksum_type: "SHA256" },
+        input: { dirname: datadir, checksum_type: "SHA256" },
       )
       job
     }
@@ -171,9 +183,8 @@ RSpec.describe Teneo::Workflow do
     end
 
     it "should camelize the workitem name" do
-      binding.pry
-      show run
-      expect(run.options["CollectFiles"][:parameters]["location"]).to eq dirname
+      run
+      expect(run.options["CollectFiles"][:parameters]["location"]).to eq datadir
       expect(run.size).to eq 1
       expect(run.items.size).to eq 1
       expect(run.items.first.class).to eq TestDirItem
@@ -183,15 +194,14 @@ RSpec.describe Teneo::Workflow do
 
       expect(run.job.items.first.name).to eq "Items"
 
-      run.job.items.first.each_with_index do |x, i|
-        expect(x.name).to eq %w[TestDirItem.rb TestFileItem.rb TestRun.rb][i]
+      run.job.items.first.items.each_with_index do |x, i|
+        expect(x.name).to eq %w[TestDirItem.rb TestFileItem.rb TestJob.rb TestRun.rb TestWorkflow.rb][i]
       end
     end
 
     it "should return expected debug output" do
+      binding.pry
       run
-
-      show run
       check_output $logoutput, <<~STR
                       INFO -- Run - TestRun : Ingest run started.
                       INFO -- Run - TestRun : Running subtask (1/2): CollectFiles
@@ -283,7 +293,7 @@ RSpec.describe Teneo::Workflow do
       job = TestJob.new(workflow)
       job.description = "Job for testing run_always"
       job.configure(
-        input: { dirname: dirname, processing: processing, force_run: force_run },
+        input: { dirname: datadir, processing: processing, force_run: force_run },
       )
       job
     }
