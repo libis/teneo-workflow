@@ -73,7 +73,7 @@ module Teneo
           end
 
           run_subitems(item, *args) if recursive
-          item.set_status(:done) if item.status_equals(:started)
+          set_status(:done, item: item) if status_equals(:started, item: item)
 
           post_process item, *args
 
