@@ -19,7 +19,7 @@ module Teneo
       end
 
       def names
-        ['']
+        []
       end
 
       def namepath
