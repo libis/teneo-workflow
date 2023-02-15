@@ -5,10 +5,26 @@ require_relative "status_enum"
 module Teneo
   module Workflow
     module Base
-      module Status
+      module StatusEntry
 
-        # Assumes that a StatusLog implementation class is set in Teneo::Workflow.config.status_log
+        ### Class that represents a single status log entry
+        # Entries are expected to be unique by run, task and item.
+        # Updates to status or progress should overwrite existing log entries.
 
+        ### Methods that need implementation in the including class
+        # getter and setter accessors for:
+        # - name
+        # - config
+        # getter accessors for:
+        # - job
+        # - options
+        # - properties
+        # instance methods:
+        # - save!
+
+        ### Derived methods
+
+        def update_status
         # @return [Teneo::Workflow::Status] newly created status entry
         def set_status(status, run: nil, task: nil, item: nil, progress: nil, max: nil)
           info = resolve_info(run: run, task: task, item: item)
@@ -17,7 +33,7 @@ module Teneo
 
         # @return [Teneo::Workflow::Status] updated or created status entry
         def status_progress(progress = nil, max: nil, task: nil, item: nil)
-          if entry = status_entry(task: task, item: item)
+          if entry = last_status(task: task, item: item)
             entry.update_status(**{ progress: progress || entry.progress + 1, max: max }.compact)
           else
             set_status(:started, task: task, item: item, progress: progress, max: max)
@@ -25,22 +41,22 @@ module Teneo
         end
 
         # @return [Teneo::Workflow::Status] status entry or nil if not found
-        def status_entry(task: nil, item: nil)
+        def last_status(task: nil, item: nil)
           info = resolve_info(task: task, item: item)
-          Teneo::Workflow.config.status_log.find_entry(**info)
+          Teneo::Workflow.config.status_log.find_last(**info)
         end
 
         # Get last known status symbol for a given task and item
         # @return [Symbol] the status code
         def get_status(task: nil, item: nil)
-          entry = status_entry(task: task, item: item)
+          entry = last_status(task: task, item: item)
           entry&.status_sym || Teneo::Workflow::Base::StatusEnum.keys.first
         end
 
         # Get last known status text for a given task
         # @return [String] the status text
         def get_status_txt(task: nil, item: nil)
-          entry = status_entry(task: task, item: item)
+          entry = last_status(task: task, item: item)
           entry&.status_txt || Teneo::Workflow::Base::StatusEnum.values.first
         end
 
@@ -62,11 +78,16 @@ module Teneo
           Teneo::Workflow::Base::StatusEnum.to_int(get_status(task: task, item: item)) <=> Teneo::Workflow::Base::StatusEnum.to_int(status)
         end
 
-        def status_log(**info)
-          info = resolve_info(**info)
+        def status_log
+          info = resolve_info
           Teneo::Workflow.config.status_log.find_all(**info)
         end
-
+  
+        def last_status_log
+          info = resolve_info
+          Teneo::Workflow.config.find_all_last(**info)
+        end
+        
         def resolve_info(run: nil, task: nil, item: nil)
           run ||= self if self.is_a?(Teneo::Workflow::Run)
           task ||= self if self.is_a?(Teneo::Workflow::Task)
@@ -76,8 +97,10 @@ module Teneo
             task = task.namepath
           end
           item = nil unless item.is_a?(Teneo::Workflow::WorkItem)
-          { run: run, task: task, item: item }.compact
+          {run: run, task: task, item: item}.compact
         end
+
+  
       end
     end
   end

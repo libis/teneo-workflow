@@ -13,11 +13,11 @@ module Teneo
         end
 
         def execute(item, *args)
-          return item if action == 'abort' && !run_always
+          return item if action == "abort" && !run_always
 
           item = execution_loop(item, *args)
 
-          self.action = 'abort' unless item
+          self.action = "abort" unless item
           item
         rescue Teneo::Workflow::Error => e
           error e.message, item
@@ -25,9 +25,9 @@ module Teneo
         rescue Teneo::Workflow::Abort => e
           set_status :failed, item: item
           raise e if parent
-        rescue StandardError => e
+        rescue Exception => e
           set_status :failed, item: item
-          fatal "Exception occured: #{e.message}", item
+          fatal "Exception occured: #{e.message} @ #{e.backtrace.first}", item
           debug e.backtrace.join("\n")
         end
 
@@ -53,19 +53,19 @@ module Teneo
             when :done, :reverted
               return item
             when :failed, :async_halt
-              self.action = 'abort'
+              self.action = "abort"
               return item
             when :async_wait
               sleep(retry_interval)
             else
-              warn 'Something went terribly wrong, retrying ...'
+              warn "Something went terribly wrong, retrying ..."
             end
           end
           item
         end
 
         def process_item(item, *args)
-          return item if last_status(item: item) == :done && !run_always
+          return item if get_status(item: item) == :done && !run_always
 
           if pre_process(item, *args)
             set_status :started, item: item

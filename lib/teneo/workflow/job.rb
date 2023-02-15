@@ -120,7 +120,7 @@ module Teneo
 
       def last_status_log(task = nil)
         task = task.namepath if task.is_a?(Teneo::Workflow::Task)
-        Teneo::Workflow.config.status_log.find_last(task: task, item: self)
+        Teneo::Workflow.config.status_log.get_status(task: task, item: self)
       end
 
       def last_status(task)

@@ -48,7 +48,7 @@ module Teneo
           unless task.run_always
             next unless continue
 
-            if last_status(item: item) == :done
+            if get_status(item: item) == :done
               debug 'Retry: skipping task %s because it has finished successfully.', item, task.namepath
               next
             end
