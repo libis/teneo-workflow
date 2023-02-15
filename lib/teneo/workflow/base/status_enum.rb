@@ -23,7 +23,7 @@ module Teneo
         end
 
         def self.success?(status)
-          [:revered, :done].include? status
+          [:reverted, :done].include? status
         end
 
         def self.busy?(status)

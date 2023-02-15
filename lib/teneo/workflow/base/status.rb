@@ -62,21 +62,16 @@ module Teneo
           Teneo::Workflow::Base::StatusEnum.to_int(get_status(task: task, item: item)) <=> Teneo::Workflow::Base::StatusEnum.to_int(status)
         end
 
-        def status_log(**info)
-          info = resolve_info(**info)
-          Teneo::Workflow.config.status_log.find_all(**info)
-        end
-
         def resolve_info(run: nil, task: nil, item: nil)
           run ||= self if self.is_a?(Teneo::Workflow::Run)
           task ||= self if self.is_a?(Teneo::Workflow::Task)
           item ||= self if self.is_a?(Teneo::Workflow::WorkItem)
+          item ||= self if self.is_a?(Teneo::Workflow::Job)
           if task.is_a?(Teneo::Workflow::Task)
             run ||= task.run
             task = task.namepath
           end
-          item = nil unless item.is_a?(Teneo::Workflow::WorkItem)
-          { run: run, task: task, item: item }.compact
+          { run: run, task: task, item: item }
         end
       end
     end

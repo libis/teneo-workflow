@@ -53,7 +53,7 @@ module Teneo
             when :done, :reverted
               return item
             when :failed, :async_halt
-              self.action = "abort"
+              self.action = "abort" if abort_on_failure
               return item
             when :async_wait
               sleep(retry_interval)

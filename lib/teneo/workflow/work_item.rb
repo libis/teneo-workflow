@@ -125,6 +125,10 @@ module Teneo
 
       alias count size
 
+      def status_log
+        Teneo::Workflow.config.status_log.find_all(item: self)
+      end
+
       # @return [WorkItem] the root WorkItem object
       def root_item
         parent&.is_a?(WorkItem) ? parent.root_item : self

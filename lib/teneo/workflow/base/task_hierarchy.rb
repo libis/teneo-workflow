@@ -30,24 +30,24 @@ module Teneo
             debug 'Processing subitem (%d/%d): %s', parent_item, i + 1, items.size, item.to_s
 
             begin
-              new_item = process_item(item, *args)
+              new_item = execute(item, *args)
               item = new_item if new_item.is_a?(Teneo::Workflow::WorkItem)
             rescue Teneo::Workflow::Error => e
               set_status :failed, item: item
-              error 'Error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
+              error 'Error processing subitem %s (%d/%d): %s', parent_item, item.name, i + 1, items.size, e.message
             rescue Teneo::Workflow::Abort => e
-              fatal 'Fatal error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
+              fatal 'Fatal error processing subitem %s (%d/%d): %s', parent_item, item.name, i + 1, items.size, e.message
               set_status :failed, item: item
               break
             rescue StandardError => e
-              fatal 'Unexpected error processing subitem (%d/%d): %s', parent_item, i + 1, items.size, e.message
+              fatal 'Unexpected error processing subitem %s (%d/%d): %s', parent_item, item.name, i + 1, items.size, e.message
               set_status :failed, item: item
               raise Teneo::Workflow::Abort, "#{e.message} @ #{e.backtrace.first}"
             ensure
               item_status = get_status item: item
               status_count[item_status] += 1
               break if abort_on_failure && item_status != :done
-              status_progress(i + 1, item: parent_item)
+              status_progress(i + 1, item: parent_item) if status_equals(:done, item: item)
             end
           end
 
@@ -59,12 +59,12 @@ module Teneo
           final_item_status = :done
 
           if (waiting = status_count[:async_wait]).positive?
-            info "waiting for %d sub#{task_or_item}(s) in async process", item, waiting
+            info "%d sub#{task_or_item}(s) waiting for #{Teneo::Workflow::Base::StatusEnum.to_str(:async_wait)}", item, waiting
             final_item_status = :async_wait
           end
 
           if (halted = status_count[:async_halt]).positive?
-            warn "%d sub#{task_or_item}(s) halted in async process", item, halted
+            warn "%d sub#{task_or_item}(s) stopped because #{Teneo::Workflow::Base::StatusEnum.to_str(:async_halt)}", item, halted
             final_item_status = :async_halt
           end
 

@@ -9,19 +9,19 @@ class ProcessingTask < ::Teneo::Workflow::Task
 
     case parameter(:config).downcase.to_sym
     when :success
-      info "Task success"
+      info "Task success", item
     when :async_halt
-      set_status(item, :ASYNC_HALT)
-      error "Task failed with async_halt status"
+      set_status(:async_halt, item: item)
+      error "Task aborted with async_halt status", item
     when :fail
-      set_status(item, :FAILED)
-      error "Task failed with failed status"
+      set_status(:failed, item: item)
+      error "Task aborted with failed status", item
     when :error
-      raise Libis::Workflow::Error, "Task failed with WorkflowError exception"
+      raise Teneo::Workflow::Error, "Task aborted with WorkflowError exception"
     when :abort
-      raise Libis::Workflow::Abort, "Task failed with WorkflowAbort exception"
+      raise Teneo::Workflow::Abort, "Task aborted with WorkflowAbort exception"
     else
-      info "Task success"
+      info "Task success", item
     end
   end
 end
