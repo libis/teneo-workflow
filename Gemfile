@@ -9,8 +9,11 @@ gem "rake", "~> 13.0"
 
 gem "rspec", "~> 3.0"
 
-gem 'gem-release'
-gem 'github_changelog_generator'
+gem "gem-release"
+gem "github_changelog_generator"
+
+gem "ruby-debug-ide"
+gem "byebug"
 
 gem "awesome_print"
 gem "standard", group: [:development, :test]

@@ -131,6 +131,8 @@ GEM
     rubocop-performance (1.15.2)
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
+    ruby-debug-ide (0.7.3)
+      rake (>= 0.8.1)
     ruby-enum (0.9.0)
       i18n
     ruby-progressbar (1.11.0)
@@ -162,11 +164,13 @@ PLATFORMS
 DEPENDENCIES
   amazing_print
   awesome_print
+  byebug
   gem-release
   github_changelog_generator
   pry-byebug
   rake (~> 13.0)
   rspec (~> 3.0)
+  ruby-debug-ide
   standard
   teneo-tools!
   teneo-workflow!
