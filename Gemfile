@@ -14,3 +14,7 @@ gem 'github_changelog_generator'
 
 gem "awesome_print"
 gem "standard", group: [:development, :test]
+
+source "https://rubygems.pkg.github.com/libis" do
+  gem "teneo-tools"
+end

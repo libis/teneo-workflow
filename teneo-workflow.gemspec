@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
-  spec.metadata["allowed_push_host"] = "https://rubygems.org"
+  spec.metadata["allowed_push_host"] = "https://rubygems.pkg.github.com/libis"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
@@ -35,6 +35,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "teneo-tools", "~> 0.1.5"
   spec.add_runtime_dependency "ruby-enum", "~> 0.9"
 
-  spec.add_development_dependency 'pry-byebug'
-  spec.add_development_dependency 'amazing_print'
+  spec.add_development_dependency "pry-byebug"
+  spec.add_development_dependency "amazing_print"
 end

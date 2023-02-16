@@ -1,10 +1,10 @@
 PATH
   remote: .
   specs:
-    teneo-workflow (0.1.1)
+    teneo-workflow (0.1.2)
       dry-configurable (~> 0.0)
       ruby-enum (~> 0.9)
-      teneo-tools (~> 0.1.4)
+      teneo-tools (~> 0.1.5)
 
 GEM
   remote: https://rubygems.org/
@@ -142,15 +142,19 @@ GEM
       language_server-protocol (~> 3.17.0.2)
       rubocop (= 1.42.0)
       rubocop-performance (= 1.15.2)
-    teneo-tools (0.1.4)
-      concurrent-ruby (~> 1.0)
-      logging (~> 2.3.1)
     timers (4.3.5)
     traces (0.8.0)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
-    zeitwerk (2.6.6)
+    zeitwerk (2.6.7)
+
+GEM
+  remote: https://rubygems.pkg.github.com/libis/
+  specs:
+    teneo-tools (0.1.5)
+      concurrent-ruby (~> 1.0)
+      logging (~> 2.3.1)
 
 PLATFORMS
   x86_64-linux
@@ -164,6 +168,7 @@ DEPENDENCIES
   rake (~> 13.0)
   rspec (~> 3.0)
   standard
+  teneo-tools!
   teneo-workflow!
 
 BUNDLED WITH
