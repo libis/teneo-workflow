@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    teneo-workflow (0.1.2)
+    teneo-workflow (0.2.0)
       dry-configurable (~> 0.0)
       ruby-enum (~> 0.9)
       teneo-tools (~> 0.2)
