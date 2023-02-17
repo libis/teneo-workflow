@@ -6,7 +6,8 @@ Gem::Specification.new do |spec|
   spec.name = "teneo-workflow"
   spec.version = Teneo::Workflow::VERSION
   spec.authors = ["Kris Dekeyser"]
-  spec.email = ["kris@dva.be"]
+  spec.email = ["kris.dekeyser@kuleuven.be"]
+  spec.date = Date.today.to_s
 
   spec.summary = "Workflow infrastructure for Teneo."
   spec.description = "Workflow base implementation for the Teneo ingester."
