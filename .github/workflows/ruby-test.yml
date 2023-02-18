@@ -23,6 +23,14 @@ jobs:
         ruby-version: ['3.1.2']
     steps:
     - uses: actions/checkout@v3
+    - name: Set Credentials
+      run: |
+        mkdir -p $HOME/.gem
+        touch $HOME/.gem/credentials
+        chmod 0600 $HOME/.gem/credentials
+        printf -- "---\n:github: Bearer ${GITHUB_TOKEN}\n" > $HOME/.gem/credentials
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - name: Set up Ruby
     # To automatically get bug fixes and new Ruby versions for ruby/setup-ruby,
     # change this to (see https://github.com/ruby/setup-ruby#versioning):
