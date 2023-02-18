@@ -9,7 +9,7 @@ name: Ruby
 
 on:
   push:
-    tag: 'v*'
+    tags: 'v*'
 
 permissions:
   contents: read
