@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.2.0](https://github.com/libis/teneo-workflow/tree/v0.2.0) (2023-02-17)
+
+[Full Changelog](https://github.com/libis/teneo-workflow/compare/v0.1.2...v0.2.0)
+
 ## [v0.1.2](https://github.com/libis/teneo-workflow/tree/v0.1.2) (2023-02-15)
 
 [Full Changelog](https://github.com/libis/teneo-workflow/compare/v0.1.1...v0.1.2)
