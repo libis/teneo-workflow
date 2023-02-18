@@ -33,7 +33,6 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.GITHUB_TOKEN }}:x-oauth-basic
+        BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.KRIS_PACKAGE_TOKEN }}
     - name: Run tests
       run: bundle exec rake
