@@ -16,7 +16,7 @@ gem "ruby-debug-ide"
 gem "byebug"
 
 gem "awesome_print"
-gem "standard", group: [:development, :test]
+gem "standard", ">= 1.47.0", group: [:development, :test]
 
 source "https://rubygems.pkg.github.com/libis" do
   gem "teneo-tools"
